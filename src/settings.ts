@@ -1,4 +1,5 @@
 import { SettingSchemaDesc } from "@logseq/libs/dist/LSPlugin.user";
+import { label } from "./labels";
 
 export type ButtonScope = "sidebar" | "page" | "both";
 
@@ -30,6 +31,24 @@ export const DEFAULT_BUTTONS: TemplateButton[] = [
 export const DEFAULT_BUTTONS_JSON = JSON.stringify(DEFAULT_BUTTONS, null, 2);
 
 export const settings: SettingSchemaDesc[] = [
+  {
+    key: "uiLocale",
+    type: "enum",
+    enumChoices: ["en", "ru"],
+    enumPicker: "select",
+    default: "en",
+    title: "UI language",
+    description: "Preset for plugin messages, page bar, and copy panel. Override any string in UI labels JSON.",
+  },
+  {
+    key: "uiLabels",
+    type: "string",
+    default: "",
+    title: "UI labels (JSON overrides)",
+    description:
+      "Optional JSON object to override UI strings. Keys: pageBarPopupTitle, copyPanelTitle, msgOpenRegularPage, templateNotFound, etc. Placeholders: {name}, {label}, {command}, {path}, {binary}. Empty = use locale preset only.",
+    inputAs: "textarea",
+  },
   {
     key: "sectionTitle",
     type: "string",
@@ -200,7 +219,7 @@ export function parseButtons(raw: unknown): TemplateButton[] {
     return buttons.length ? buttons : DEFAULT_BUTTONS;
   } catch (error) {
     console.error("[TemplateButtons] Invalid buttons JSON", error);
-    logseq.App.showMsg("Template Buttons: invalid buttons JSON in settings", "warning");
+    logseq.App.showMsg(label("msgInvalidButtonsJson"), "warning");
     return DEFAULT_BUTTONS;
   }
 }

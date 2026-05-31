@@ -54,5 +54,5 @@ Similar clarity to Logseq marketplace icons: simple glyph, one clear idea, reada
 
 ## After generation
 
-1. Replace `/icon.png` in the repository root.
+1. Replace `/icon.png` in the repository root (source: `docs/screenshots/logo.png`).
 2. Run `yarn build` and reload the plugin in Logseq to verify sidebar + marketplace preview.

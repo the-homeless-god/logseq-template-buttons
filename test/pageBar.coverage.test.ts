@@ -86,7 +86,7 @@ describe("pageBar coverage", () => {
     refreshPageBar();
     await flush();
     togglePageBarMenu();
-    expect(logseq.App.showMsg).toHaveBeenCalledWith("Откройте обычную страницу (не journal)", "warning");
+    expect(logseq.App.showMsg).toHaveBeenCalledWith("Open a regular page (not a journal)", "warning");
 
     logseq.Editor.getCurrentPage.mockResolvedValue({
       name: "Parent.Page",

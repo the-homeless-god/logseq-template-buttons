@@ -1,5 +1,9 @@
 # Logseq Template Buttons
 
+<p align="center">
+  <img src="docs/screenshots/logo.png" alt="Template Buttons icon" width="128" height="128" />
+</p>
+
 ![GitHub release](https://img.shields.io/github/v/release/the-homeless-god/logseq-template-buttons)
 ![GitHub downloads](https://img.shields.io/github/downloads/the-homeless-god/logseq-template-buttons/total)
 ![License](https://img.shields.io/github/license/the-homeless-god/logseq-template-buttons)
@@ -25,7 +29,31 @@ Manual install (development):
 - **Page bar menu** on the current page — create a **child page** from a template and append a backlink on the parent.
 - **Template buttons** — insert full template content (respects all blocks under `template::`, including when `template-including-parent:: false`).
 - **Command buttons** — run shell commands from a graph-relative `cwd` (desktop; marked with a terminal icon and ▶ badge).
+- **Copy social markdown** — page bar button exports post text (no images) for Telegram etc.
+- **Localizable UI** — English by default; Russian preset or custom JSON labels for all messages and tooltips.
 - **JSON configuration** — button list, page name patterns, scope per button (`sidebar`, `page`, `both`).
+
+## Screenshots
+
+| Overview | Plugin settings |
+| --- | --- |
+| ![Sidebar and page bar](docs/screenshots/overview.png) | ![Settings](docs/screenshots/settings.png) |
+
+| Buttons JSON | Command notification |
+| --- | --- |
+| ![Buttons configuration](docs/screenshots/buttons-json.png) | ![Command run](docs/screenshots/command-notification.png) |
+
+| Page bar child button | Child page + backlink |
+| --- | --- |
+| ![Page bar menu](docs/screenshots/pagebar-child-button.png) | ![Child page result](docs/screenshots/child-page-result.png) |
+
+| Template example | Create from template |
+| --- | --- |
+| ![Logseq template](docs/screenshots/template-example.png) | ![New page from template](docs/screenshots/create-from-template.png) |
+
+| Copy social markdown |
+| --- |
+| ![Copy panel](docs/screenshots/copy-social.png) |
 
 ## Quick start
 
@@ -65,6 +93,8 @@ Manual install (development):
 
 | Setting | Default | Description |
 | --- | --- | --- |
+| UI language | `en` | Preset for messages and tooltips (`en` or `ru`) |
+| UI labels (JSON) | (empty) | Override any UI string; merged on top of locale preset |
 | Section title | `Templates` | Sidebar section header |
 | Default page name pattern | `{template}.{date}` | For sidebar template buttons without `pageName` |
 | Child page name pattern | `{parent}/{template}.{date}` | For page-bar child creation |
@@ -90,6 +120,25 @@ Manual install (development):
 | `both` | Sidebar + page bar (default for templates) |
 | `sidebar` | Left sidebar only (default for commands) |
 | `page` | Page bar only |
+
+### UI labels
+
+Set **UI language** to `ru` for Russian tooltips and messages, or keep `en` (default).
+
+To customize individual strings, add **UI labels** JSON — only include keys you want to override:
+
+```json
+{
+  "pageBarPopupTitle": "Child page",
+  "copyPanelTitle": "Social markdown",
+  "copyPanelCopyButton": "Copy",
+  "msgOpenRegularPage": "Open a regular page (not a journal)",
+  "createdPage": "Created [[{name}]]",
+  "templateNotFound": "Template \"{name}\" not found"
+}
+```
+
+Placeholders: `{name}`, `{label}`, `{command}`, `{path}`, `{binary}`.
 
 ## How it works
 
@@ -187,6 +236,7 @@ git clone https://github.com/the-homeless-god/logseq-template-buttons.git
 cd logseq-template-buttons
 yarn install
 yarn dev
+yarn test:coverage
 ```
 
 Load unpacked plugin in Logseq (**Developer mode**), point to this folder. After code changes: `yarn dev`, then **Reload** on the plugin card.

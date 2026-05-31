@@ -112,7 +112,7 @@ describe("socialMarkdown coverage", () => {
 
     await expect(buildSocialMarkdown("Empty.Content")).resolves.toBeNull();
     await expect(copySocialMarkdownForPage("Empty.Content")).resolves.toBe(false);
-    expect(logseq.App.showMsg).toHaveBeenCalledWith("Нет блока #post / Content на этой странице", "warning");
+    expect(logseq.App.showMsg).toHaveBeenCalledWith("No #post / Content block on this page", "warning");
   });
 
   it("uses page fallback title for digitable pages", async () => {
@@ -205,7 +205,7 @@ describe("socialMarkdown coverage", () => {
     ) as HTMLButtonElement;
     copyButton.click();
     await vi.waitFor(() => {
-      expect(logseq.App.showMsg).toHaveBeenCalledWith("Markdown для соцсетей скопирован", "success");
+      expect(logseq.App.showMsg).toHaveBeenCalledWith("Social markdown copied", "success");
     });
   });
 });

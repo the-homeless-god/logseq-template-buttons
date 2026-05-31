@@ -88,7 +88,7 @@ describe("pageBar", () => {
     };
 
     await copyPageSocialMarkdown();
-    expect(logseq.App.showMsg).toHaveBeenCalledWith("Откройте обычную страницу (не journal)", "warning");
+    expect(logseq.App.showMsg).toHaveBeenCalledWith("Open a regular page (not a journal)", "warning");
 
     logseq.Editor.getCurrentPage.mockResolvedValue({
       name: "Parent.Page",
@@ -115,7 +115,7 @@ describe("pageBar", () => {
     ]);
     togglePageBarMenu();
     expect(logseq.App.showMsg).toHaveBeenCalledWith(
-      "Нет шаблонов для page bar (scope: page или both)",
+      "No templates for page bar (scope: page or both)",
       "warning"
     );
   });

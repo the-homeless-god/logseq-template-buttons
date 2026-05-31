@@ -1,3 +1,5 @@
+import { label } from "./labels";
+
 function getHostDocument() {
   try {
     return parent.document;
@@ -137,12 +139,12 @@ export function showCopyPanel(text: string, onCopied?: () => void) {
       }
     </style>
     <div class="lstb-copy-panel" role="dialog" aria-modal="true">
-      <div class="lstb-copy-title">Markdown для соцсетей</div>
-      <div class="lstb-copy-hint">Нажмите «Скопировать» или выделите текст и Cmd+C.</div>
+      <div class="lstb-copy-title">${label("copyPanelTitle")}</div>
+      <div class="lstb-copy-hint">${label("copyPanelHint")}</div>
       <textarea spellcheck="false"></textarea>
       <div class="lstb-copy-actions">
-        <button type="button" data-lstb-close="true">Закрыть</button>
-        <button type="button" data-lstb-copy="true">Скопировать</button>
+        <button type="button" data-lstb-close="true">${label("copyPanelCloseButton")}</button>
+        <button type="button" data-lstb-copy="true">${label("copyPanelCopyButton")}</button>
       </div>
     </div>
   `;
@@ -170,7 +172,7 @@ export function showCopyPanel(text: string, onCopied?: () => void) {
       textarea.focus();
       textarea.select();
     }
-    logseq.App.showMsg("Выделите текст и нажмите Cmd+C", "warning");
+    logseq.App.showMsg(label("msgCopyManual"), "warning");
   });
 
   overlay.addEventListener("click", (event) => {

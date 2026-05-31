@@ -1,4 +1,5 @@
 import type { BlockEntity, IBatchBlock } from "@logseq/libs/dist/LSPlugin";
+import { label } from "./labels";
 import { getDateForPage } from "logseq-dateutils";
 
 let dateFormat = "dd.MM.yyyy";
@@ -319,7 +320,7 @@ async function insertTemplateViaNativeApi(
 async function insertTemplateIntoPage(pageName: string, templateName: string) {
   const batchBlocks = await collectTemplateBatchBlocks(templateName);
   if (!batchBlocks.length) {
-    logseq.App.showMsg(`Template "${templateName}" has no content blocks`, "warning");
+    logseq.App.showMsg(label("templateEmpty", { name: templateName }), "warning");
     return false;
   }
 
@@ -329,7 +330,7 @@ async function insertTemplateIntoPage(pageName: string, templateName: string) {
 
   const page = await logseq.Editor.createPage(pageName, {}, { createFirstBlock: true, redirect: false });
   if (!page) {
-    logseq.App.showMsg(`Failed to create page "${pageName}"`, "error");
+    logseq.App.showMsg(label("failedCreatePage", { name: pageName }), "error");
     return false;
   }
 
@@ -344,7 +345,7 @@ async function insertTemplateIntoPage(pageName: string, templateName: string) {
     return true;
   }
 
-  logseq.App.showMsg(`Failed to insert template into "${pageName}"`, "error");
+  logseq.App.showMsg(label("failedInsertTemplate", { name: pageName }), "error");
   await logseq.Editor.deletePage(pageName);
   return false;
 }
@@ -366,7 +367,7 @@ async function addBacklinkOnParent(parentPageName: string, childPageName: string
 export async function createPageFromTemplate(templateName: string, pageNamePattern: string) {
   const exists = await logseq.App.existTemplate(templateName);
   if (!exists) {
-    logseq.App.showMsg(`Template "${templateName}" not found`, "warning");
+    logseq.App.showMsg(label("templateNotFound", { name: templateName }), "warning");
     return;
   }
 
@@ -377,7 +378,7 @@ export async function createPageFromTemplate(templateName: string, pageNamePatte
   }
 
   await openPage(pageName);
-  logseq.App.showMsg(`Created [[${pageName}]]`, "success");
+  logseq.App.showMsg(label("createdPage", { name: pageName }), "success");
 }
 
 export async function createChildPageFromTemplate(
@@ -388,7 +389,7 @@ export async function createChildPageFromTemplate(
 ) {
   const exists = await logseq.App.existTemplate(templateName);
   if (!exists) {
-    logseq.App.showMsg(`Template "${templateName}" not found`, "warning");
+    logseq.App.showMsg(label("templateNotFound", { name: templateName }), "warning");
     return;
   }
 
@@ -404,5 +405,5 @@ export async function createChildPageFromTemplate(
   }
 
   await openPage(childPageName);
-  logseq.App.showMsg(`Created child [[${childPageName}]]`, "success");
+  logseq.App.showMsg(label("createdChildPage", { name: childPageName }), "success");
 }

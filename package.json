@@ -1,6 +1,6 @@
 {
   "name": "logseq-template-buttons",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Custom sidebar buttons to create pages from Logseq templates",
   "main": "dist/index.html",
   "targets": {

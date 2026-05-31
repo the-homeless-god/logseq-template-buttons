@@ -111,7 +111,7 @@ describe("full coverage gaps", () => {
 
     pageBarTestHooks.setCurrentPageName(null);
     await pageBarTestHooks.handlePageBarIndex(0);
-    expect(logseq.App.showMsg).toHaveBeenCalledWith("Откройте обычную страницу (не journal)", "warning");
+    expect(logseq.App.showMsg).toHaveBeenCalledWith("Open a regular page (not a journal)", "warning");
 
     pageBarTestHooks.setCurrentPageName("Parent");
     await pageBarTestHooks.handlePageBarIndex(0);

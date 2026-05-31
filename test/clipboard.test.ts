@@ -62,7 +62,7 @@ describe("clipboard", () => {
     ) as HTMLButtonElement;
     copyButton.click();
     await vi.waitFor(() => {
-      expect(logseq.App.showMsg).toHaveBeenCalledWith("Выделите текст и нажмите Cmd+C", "warning");
+      expect(logseq.App.showMsg).toHaveBeenCalledWith("Select the text and press Cmd+C", "warning");
     });
 
     const closeButton = document.querySelector(

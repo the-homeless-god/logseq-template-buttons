@@ -13,6 +13,7 @@ import {
   openTerminalScript,
   resolveTerminalScriptForCommand,
 } from "./scriptLauncher";
+import { label } from "./labels";
 
 const LOGSEQ_SHELL_ALLOWLIST = new Set(["git", "pandoc", "ag", "grep", "alda"]);
 
@@ -132,7 +133,7 @@ function allowlistConfigHint(binary: string, graphPath: string, command: string)
   const nodeLine = npmCommandToNodeScript(graphPath, command);
   if (nodeLine) {
     const nodeBin = getCommandBinary(nodeLine);
-    return `Добавьте в logseq/config.edn :shell/command-allowlist ["${nodeBin}"], или укажите nodePath в настройках плагина. Команда: ${nodeLine}`;
+    return label("msgAllowlistHint", { binary: nodeBin, command: nodeLine });
   }
   return `:shell/command-allowlist ["${binary}" ...] in logseq/config.edn`;
 }
@@ -218,7 +219,7 @@ function parseGitArgs(command: string, gitArgs?: string[]) {
 export async function runGitButton(button: { label: string; command: string; gitArgs?: string[] }) {
   const args = parseGitArgs(button.command, button.gitArgs);
   if (!args.length) {
-    logseq.App.showMsg(`Git: empty command for "${button.label}"`, "warning");
+    logseq.App.showMsg(label("gitEmptyCommand", { label: button.label }), "warning");
     return;
   }
 
@@ -232,7 +233,7 @@ export async function runGitButton(button: { label: string; command: string; git
     logseq.App.showMsg(preview, status, { timeout: output.length > 200 ? 15000 : 8000 });
   } catch (error) {
     console.error("[TemplateButtons] Git command failed", error);
-    logseq.App.showMsg(`Git failed: ${button.label}`, "error");
+    logseq.App.showMsg(label("gitFailed", { label: button.label }), "error");
   }
 }
 
@@ -246,7 +247,7 @@ async function runViaRunCommandDialog(
   workDir: string,
   graphPath: string,
   command: string,
-  label: string
+  buttonLabel: string
 ) {
   const shellLine = buildRunDialogCommand(workDir, graphPath, command);
   const binary = needsAllowlistEntry(shellLine);
@@ -254,12 +255,11 @@ async function runViaRunCommandDialog(
 
   await openRunCommandDialog();
 
-  let hint = `${label}: Cmd+Shift+1 — вставьте (Cmd+V) и Enter`;
+  let hint = label("msgRunDialogHint", { label: buttonLabel });
   if (binary) {
     hint += `\n${allowlistConfigHint(binary, graphPath, command)}`;
   }
-  hint +=
-    "\nЕсли npm не находится — используйте type: terminal или укажите nodePath в настройках плагина.";
+  hint += `\n${label("msgRunDialogNpmHint")}`;
 
   logseq.App.showMsg(hint, "warning", { timeout: 18000 });
 
@@ -284,17 +284,17 @@ export async function runCommandButton(button: { label: string; cwd?: string; co
   }
 
   const runDialogCommand = buildRunDialogCommand(workDir, graphPath, button.command);
-  logseq.App.showMsg(`Running: ${runDialogCommand}`);
+  logseq.App.showMsg(label("commandRunning", { command: runDialogCommand }));
 
   try {
     const ran = await tryRunViaParentApis(workDir, button.command, graphPath);
     if (ran) {
-      logseq.App.showMsg(`Command finished: ${button.label}`, "success");
+      logseq.App.showMsg(label("commandFinished", { label: button.label }), "success");
       return;
     }
   } catch (error) {
     console.error("[TemplateButtons] Command failed", error);
-    logseq.App.showMsg(`Command failed: ${button.label}`, "error");
+    logseq.App.showMsg(label("commandFailed", { label: button.label }), "error");
     return;
   }
 
@@ -302,7 +302,7 @@ export async function runCommandButton(button: { label: string; cwd?: string; co
     await runViaRunCommandDialog(workDir, graphPath, button.command, button.label);
   } catch (error) {
     console.error("[TemplateButtons] Run dialog fallback failed", error);
-    logseq.App.showMsg(`Cmd+Shift+1:\n${runDialogCommand}`, "error", { timeout: 12000 });
+    logseq.App.showMsg(label("cmdShiftFallback", { command: runDialogCommand }), "error", { timeout: 12000 });
   }
 }
 

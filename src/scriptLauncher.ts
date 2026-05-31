@@ -11,6 +11,8 @@ function normalizePath(value: string) {
   return value.replace(/\\/g, "/").replace(/\/$/, "");
 }
 
+import { label as uiLabel } from "./labels";
+
 export async function getGraphPath() {
   const graph = await logseq.App.getCurrentGraph();
   return graph?.path || graph?.url?.replace(/^file:\/\//, "") || "";
@@ -75,10 +77,10 @@ export function npmCommandToNodeScript(graphPath: string, command: string) {
   return buildNodeScriptCommand(graphPath, mapped.script, args);
 }
 
-export async function openTerminalScript(relativePath: string, label: string) {
+export async function openTerminalScript(relativePath: string, buttonLabel: string) {
   const graphPath = await getGraphPath();
   if (!graphPath) {
-    logseq.App.showMsg("Graph path not found", "error");
+    logseq.App.showMsg(uiLabel("msgGraphPathNotFound"), "error");
     return false;
   }
 
@@ -86,11 +88,13 @@ export async function openTerminalScript(relativePath: string, label: string) {
 
   try {
     await logseq.App.openExternalLink(url);
-    logseq.App.showMsg(`${label}: открыт Terminal (${relativePath})`, "success", { timeout: 8000 });
+    logseq.App.showMsg(uiLabel("msgTerminalOpened", { label: buttonLabel, path: relativePath }), "success", {
+      timeout: 8000,
+    });
     return true;
   } catch (error) {
     console.error("[TemplateButtons] openExternalLink failed", error);
-    logseq.App.showMsg(`Не удалось открыть ${relativePath}`, "error");
+    logseq.App.showMsg(uiLabel("msgTerminalOpenFailed", { path: relativePath }), "error");
     return false;
   }
 }

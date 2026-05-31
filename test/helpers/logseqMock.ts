@@ -44,6 +44,8 @@ export function createLogseqMock() {
       preferTerminalScripts: true,
       nodePath: "",
       buttons: "",
+      uiLocale: "en",
+      uiLabels: "",
     },
     provideModel: vi.fn(),
     provideStyle: vi.fn(),
@@ -73,4 +75,6 @@ export function resetLogseqMock(logseq: ReturnType<typeof createLogseqMock>) {
   logseq.settings.preferTerminalScripts = true;
   logseq.settings.pageBarEnabled = true;
   logseq.settings.buttons = "";
+  logseq.settings.uiLocale = "en";
+  logseq.settings.uiLabels = "";
 }

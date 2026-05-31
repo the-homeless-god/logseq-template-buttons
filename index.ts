@@ -1,7 +1,6 @@
 import "@logseq/libs";
 
-import { getButtons } from "./src/settings";
-import { settings } from "./src/settings";
+import { getButtons, settings } from "./src/settings";
 import { runCommandButton, runGitButton } from "./src/commandRunner";
 import { runTerminalButton } from "./src/scriptLauncher";
 import { initDateFormat } from "./src/templateLogic";

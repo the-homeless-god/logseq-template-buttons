@@ -1,4 +1,5 @@
 import { getSidebarButtons, TemplateButton } from "./settings";
+import { label } from "./labels";
 import { runCommandButton, runGitButton } from "./commandRunner";
 import { runTerminalButton } from "./scriptLauncher";
 import { createPageFromTemplate } from "./templateLogic";
@@ -27,7 +28,7 @@ async function sidebarTargetExists() {
 
 function renderButtonItems(buttons: TemplateButton[]) {
   if (!buttons.length) {
-    return `<li class="favorite-item font-medium opacity-60">No buttons configured</li>`;
+    return `<li class="favorite-item font-medium opacity-60">${escapeHtml(label("sidebarEmptyButtons"))}</li>`;
   }
 
   return buttons
@@ -209,7 +210,7 @@ export function registerToolbarFallback() {
 
   logseq.provideModel({
     openTemplateButtonsPanel() {
-      logseq.App.showMsg("Template Buttons: check the left sidebar above Favorites", "warning");
+      logseq.App.showMsg(label("sidebarToolbarHint"), "warning");
       logseq.App.setLeftSidebarVisible(true);
       scheduleSidebarRender();
     },

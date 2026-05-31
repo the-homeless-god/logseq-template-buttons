@@ -1,5 +1,6 @@
 import type { PageEntity } from "@logseq/libs/dist/LSPlugin";
 import { escapeHtml } from "./htmlUtils";
+import { label } from "./labels";
 import { isRegularPage } from "./pageUtils";
 import { getPageButtons } from "./settings";
 import { copySocialMarkdownForPage } from "./socialMarkdown";
@@ -153,7 +154,7 @@ function buildOverlayHtml() {
   return `
     <div class="lstb-pagebar-backdrop" data-lstb-close="true"></div>
     <div class="lstb-pagebar-popup" role="menu">
-      <div class="lstb-pagebar-popup-title">Дочерняя страница</div>
+      <div class="lstb-pagebar-popup-title">${escapeHtml(label("pageBarPopupTitle"))}</div>
       ${items}
     </div>
   `;
@@ -161,13 +162,13 @@ function buildOverlayHtml() {
 
 async function showOverlay() {
   if (!currentPageName) {
-    logseq.App.showMsg("Откройте обычную страницу (не journal)", "warning");
+    logseq.App.showMsg(label("msgOpenRegularPage"), "warning");
     return;
   }
 
   const buttons = getPageButtons();
   if (!buttons.length) {
-    logseq.App.showMsg("Нет шаблонов для page bar (scope: page или both)", "warning");
+    logseq.App.showMsg(label("msgNoPageBarTemplates"), "warning");
     return;
   }
 
@@ -208,7 +209,7 @@ async function showOverlay() {
 
 async function handlePageBarIndex(index: number) {
   if (!currentPageName) {
-    logseq.App.showMsg("Откройте обычную страницу (не journal)", "warning");
+    logseq.App.showMsg(label("msgOpenRegularPage"), "warning");
     return;
   }
 
@@ -230,13 +231,11 @@ function buildPageBarTemplate() {
   const buttons = getPageButtons();
   const disabled = !currentPageName;
   const childTitle = disabled
-    ? "Откройте страницу, чтобы создать дочернюю"
+    ? label("pageBarChildTooltipDisabled")
     : buttons.length
-      ? "Создать дочернюю страницу из шаблона"
-      : "Нет шаблонов (scope: page или both)";
-  const copyTitle = disabled
-    ? "Откройте страницу поста"
-    : "Копировать markdown для соцсетей (без фото)";
+      ? label("pageBarChildTooltip")
+      : label("pageBarChildTooltipNoTemplates");
+  const copyTitle = disabled ? label("pageBarCopyTooltipDisabled") : label("pageBarCopyTooltip");
 
   return `
     <a
@@ -279,7 +278,7 @@ export function registerPageBar() {
   logseq.provideModel({
     async copyPageSocialMarkdown() {
       if (!currentPageName) {
-        logseq.App.showMsg("Откройте обычную страницу (не journal)", "warning");
+        logseq.App.showMsg(label("msgOpenRegularPage"), "warning");
         return;
       }
 

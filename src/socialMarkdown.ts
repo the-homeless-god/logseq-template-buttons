@@ -1,5 +1,6 @@
 import type { BlockEntity } from "@logseq/libs/dist/LSPlugin";
 import { showCopyPanel } from "./clipboard";
+import { label } from "./labels";
 import { getGraphPath } from "./scriptLauncher";
 import { parsePostFromRaw } from "./postExtract";
 
@@ -275,12 +276,12 @@ export async function buildSocialMarkdown(pageName: string): Promise<string | nu
 export async function copySocialMarkdownForPage(pageName: string) {
   const markdown = await buildSocialMarkdown(pageName);
   if (!markdown) {
-    logseq.App.showMsg("Нет блока #post / Content на этой странице", "warning");
+    logseq.App.showMsg(label("msgNoPostBlock"), "warning");
     return false;
   }
 
   showCopyPanel(markdown, () => {
-    logseq.App.showMsg("Markdown для соцсетей скопирован", "success");
+    logseq.App.showMsg(label("msgSocialCopied"), "success");
   });
 
   return true;
