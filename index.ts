@@ -2,7 +2,8 @@ import "@logseq/libs";
 
 import { getButtons } from "./src/settings";
 import { settings } from "./src/settings";
-import { runCommandButton } from "./src/commandRunner";
+import { runCommandButton, runGitButton } from "./src/commandRunner";
+import { runTerminalButton } from "./src/scriptLauncher";
 import { initDateFormat } from "./src/templateLogic";
 import { registerPageBar, refreshPageBar } from "./src/pageBar";
 import {
@@ -16,9 +17,47 @@ import {
 logseq.useSettingsSchema(settings);
 
 function registerCommandPaletteEntries() {
-  getButtons()
-    .filter((button) => button.type === "command" && button.command)
-    .forEach((button, index) => {
+  getButtons().forEach((button, index) => {
+    if (button.type === "terminal" && button.script) {
+      const key = `lstb-term-${index}-${button.label.replace(/\s+/g, "-").toLowerCase()}`;
+      logseq.App.registerCommand(
+        `lstb_${key}`,
+        {
+          key,
+          label: `[Template Buttons] ${button.label}`,
+          palette: true,
+        },
+        async () => {
+          await runTerminalButton({
+            label: button.label,
+            script: button.script || "",
+          });
+        }
+      );
+      return;
+    }
+
+    if (button.type === "git") {
+      const key = `lstb-git-${index}-${button.label.replace(/\s+/g, "-").toLowerCase()}`;
+      logseq.App.registerCommand(
+        `lstb_${key}`,
+        {
+          key,
+          label: `[Template Buttons] Git: ${button.label}`,
+          palette: true,
+        },
+        async () => {
+          await runGitButton({
+            label: button.label,
+            command: button.command || "status",
+            gitArgs: button.gitArgs,
+          });
+        }
+      );
+      return;
+    }
+
+    if (button.type === "command" && button.command) {
       const key = `lstb-cmd-${index}-${button.label.replace(/\s+/g, "-").toLowerCase()}`;
       logseq.App.registerCommand(
         `lstb_${key}`,
@@ -35,7 +74,8 @@ function registerCommandPaletteEntries() {
           });
         }
       );
-    });
+    }
+  });
 }
 
 const main = async () => {

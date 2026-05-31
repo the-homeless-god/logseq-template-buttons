@@ -1,5 +1,8 @@
 import type { PageEntity } from "@logseq/libs/dist/LSPlugin";
+import { escapeHtml } from "./htmlUtils";
+import { isRegularPage } from "./pageUtils";
 import { getPageButtons } from "./settings";
+import { copySocialMarkdownForPage } from "./socialMarkdown";
 import { createChildPageFromTemplate } from "./templateLogic";
 
 const PAGE_BAR_KEY = "logseq-template-buttons-pagebar";
@@ -9,33 +12,8 @@ const OVERLAY_STYLE_ID = "lstb-pagebar-overlay-styles";
 
 let currentPageName: string | null = null;
 
-function escapeHtml(value: string) {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
-}
-
 function getHostDocument() {
   return parent.document;
-}
-
-function isRegularPage(page: PageEntity) {
-  if (page["journal?"]) {
-    return false;
-  }
-
-  const name = page.originalName || page.name;
-  if (!name) {
-    return false;
-  }
-
-  if (name.startsWith("Template:")) {
-    return false;
-  }
-
-  return true;
 }
 
 async function refreshCurrentPage() {
@@ -129,7 +107,7 @@ function isOverlayOpen() {
 }
 
 async function positionPopup(popup: HTMLElement) {
-  const rect = await logseq.App.queryElementRect(`${PAGE_BAR_SELECTOR} .lstb-pagebar-btn`);
+  const rect = await logseq.App.queryElementRect(`${PAGE_BAR_SELECTOR} .lstb-pagebar-child-btn`);
   if (!rect) {
     popup.style.top = "72px";
     popup.style.right = "24px";
@@ -251,18 +229,29 @@ async function handlePageBarIndex(index: number) {
 function buildPageBarTemplate() {
   const buttons = getPageButtons();
   const disabled = !currentPageName;
-  const title = disabled
+  const childTitle = disabled
     ? "Откройте страницу, чтобы создать дочернюю"
     : buttons.length
       ? "Создать дочернюю страницу из шаблона"
       : "Нет шаблонов (scope: page или both)";
+  const copyTitle = disabled
+    ? "Откройте страницу поста"
+    : "Копировать markdown для соцсетей (без фото)";
 
   return `
     <a
+      data-on-click="copyPageSocialMarkdown"
+      data-prevent-default="true"
+      class="button lstb-pagebar-btn lstb-pagebar-copy-btn${disabled ? " opacity-60" : ""}"
+      title="${escapeHtml(copyTitle)}"
+    >
+      <i class="ti ti-copy"></i>
+    </a>
+    <a
       data-on-click="togglePageBarMenu"
       data-prevent-default="true"
-      class="button lstb-pagebar-btn${disabled || !buttons.length ? " opacity-60" : ""}"
-      title="${escapeHtml(title)}"
+      class="button lstb-pagebar-btn lstb-pagebar-child-btn${disabled || !buttons.length ? " opacity-60" : ""}"
+      title="${escapeHtml(childTitle)}"
     >
       <i class="ti ti-git-branch"></i>
     </a>
@@ -288,6 +277,14 @@ export function refreshPageBar() {
 
 export function registerPageBar() {
   logseq.provideModel({
+    async copyPageSocialMarkdown() {
+      if (!currentPageName) {
+        logseq.App.showMsg("Откройте обычную страницу (не journal)", "warning");
+        return;
+      }
+
+      await copySocialMarkdownForPage(currentPageName);
+    },
     togglePageBarMenu() {
       if (isOverlayOpen()) {
         closeOverlay();
@@ -309,6 +306,13 @@ export function registerPageBar() {
   void refreshCurrentPage().then(renderPageBar);
 }
 
+export const pageBarTestHooks = {
+  setCurrentPageName(name: string | null) {
+    currentPageName = name;
+  },
+  handlePageBarIndex,
+};
+
 export const pageBarStyles = `
   ${PAGE_BAR_SELECTOR},
   ${PAGE_BAR_SELECTOR} .lstb-pagebar-btn {
@@ -324,6 +328,10 @@ export const pageBarStyles = `
     padding: 6px 8px;
     margin: 0 2px;
     border-radius: 8px;
+  }
+
+  ${PAGE_BAR_SELECTOR} .lstb-pagebar-copy-btn i.ti {
+    font-size: 17px !important;
   }
 
   ${PAGE_BAR_SELECTOR} .lstb-pagebar-btn i.ti {

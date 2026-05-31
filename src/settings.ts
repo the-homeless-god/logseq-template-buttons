@@ -4,12 +4,14 @@ export type ButtonScope = "sidebar" | "page" | "both";
 
 export type TemplateButton = {
   label: string;
-  type: "template" | "command";
+  type: "template" | "command" | "git" | "terminal";
   template?: string;
   pageName?: string;
   scope?: ButtonScope;
   cwd?: string;
   command?: string;
+  script?: string;
+  gitArgs?: string[];
 };
 
 export const DEFAULT_BUTTONS: TemplateButton[] = [
@@ -66,17 +68,33 @@ export const settings: SettingSchemaDesc[] = [
     description: "Show a dropdown on the current page to create child pages from templates.",
   },
   {
+    key: "preferTerminalScripts",
+    type: "boolean",
+    default: true,
+    title: "Open npm scripts in Terminal (macOS)",
+    description:
+      "For type `command` with `npm run ...`, open a `.command` launcher in Terminal instead of Logseq shell. Avoids «npm does not exist» in GUI Logseq.",
+  },
+  {
+    key: "nodePath",
+    type: "string",
+    default: "",
+    title: "Node binary path (optional)",
+    description:
+      "Full path to node for Cmd+Shift+1 fallback, e.g. /opt/homebrew/bin/node or ~/.nvm/versions/node/v22/bin/node. Leave empty to use `node` from PATH.",
+  },
+  {
     key: "buttons",
     type: "string",
     default: DEFAULT_BUTTONS_JSON,
     title: "Buttons",
     description:
-      "JSON array. Template: `{ \"label\", \"type\": \"template\", \"template\", \"pageName\"?, \"scope\"? }`. Command: `{ \"label\", \"type\": \"command\", \"cwd\", \"command\", \"scope\"? }`. `scope`: `sidebar`, `page`, or `both` (default). Command buttons show a ▶ badge.",
+      "JSON array. Template: `{ \"label\", \"type\": \"template\", \"template\", ... }`. Terminal (recommended for npm): `{ \"label\", \"type\": \"terminal\", \"script\": \"scripts/logseq-publish-blog-push.command\" }`. Command: `{ \"type\": \"command\", \"command\": \"npm run publish:blog:push\" }` — auto-opens Terminal if launcher exists. Git: `{ \"type\": \"git\", \"command\": \"push\" }`.",
     inputAs: "textarea",
   },
 ];
 
-function normalizeButton(item: Record<string, unknown>): TemplateButton | null {
+export function normalizeButton(item: Record<string, unknown>): TemplateButton | null {
   if (!item || typeof item.label !== "string") {
     return null;
   }
@@ -86,7 +104,45 @@ function normalizeButton(item: Record<string, unknown>): TemplateButton | null {
     return null;
   }
 
-  const explicitType = item.type === "command" ? "command" : item.type === "template" ? "template" : null;
+  const explicitType =
+    item.type === "git"
+      ? "git"
+      : item.type === "terminal"
+        ? "terminal"
+        : item.type === "command"
+          ? "command"
+          : item.type === "template"
+            ? "template"
+            : null;
+
+  if (explicitType === "terminal") {
+    const script = typeof item.script === "string" ? item.script.trim() : "";
+    if (!script) {
+      return null;
+    }
+
+    return {
+      label,
+      type: "terminal",
+      script,
+      scope: normalizeScope(item.scope ?? "sidebar"),
+    };
+  }
+
+  if (explicitType === "git") {
+    const command = typeof item.command === "string" ? item.command.trim() : "status";
+    const gitArgs = Array.isArray(item.gitArgs)
+      ? item.gitArgs.filter((arg): arg is string => typeof arg === "string" && arg.trim().length > 0)
+      : undefined;
+
+    return {
+      label,
+      type: "git",
+      command,
+      gitArgs,
+      scope: normalizeScope(item.scope ?? "sidebar"),
+    };
+  }
 
   if (explicitType === "command" || (typeof item.command === "string" && !item.template)) {
     const command = typeof item.command === "string" ? item.command.trim() : "";
@@ -119,7 +175,7 @@ function normalizeButton(item: Record<string, unknown>): TemplateButton | null {
   };
 }
 
-function normalizeScope(value: unknown): ButtonScope {
+export function normalizeScope(value: unknown): ButtonScope {
   if (value === "sidebar" || value === "page" || value === "both") {
     return value;
   }

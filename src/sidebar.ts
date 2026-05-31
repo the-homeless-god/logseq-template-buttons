@@ -1,6 +1,8 @@
 import { getSidebarButtons, TemplateButton } from "./settings";
-import { runCommandButton } from "./commandRunner";
+import { runCommandButton, runGitButton } from "./commandRunner";
+import { runTerminalButton } from "./scriptLauncher";
 import { createPageFromTemplate } from "./templateLogic";
+import { escapeHtml } from "./htmlUtils";
 
 const UI_KEY = "lstb-sidebar-section";
 
@@ -12,14 +14,6 @@ const SIDEBAR_PATHS = [
 
 let renderTimer: ReturnType<typeof setTimeout> | null = null;
 let pollTimer: ReturnType<typeof setInterval> | null = null;
-
-function escapeHtml(value: string) {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
-}
 
 async function sidebarTargetExists() {
   for (const path of SIDEBAR_PATHS) {
@@ -39,11 +33,23 @@ function renderButtonItems(buttons: TemplateButton[]) {
   return buttons
     .map((button, index) => {
       const isCommand = button.type === "command";
-      const iconClass = isCommand ? "ti-terminal-2 lstb-icon-command" : "ti-file-description";
-      const linkClass = isCommand ? "lstb-link lstb-link-command" : "lstb-link";
-      const title = isCommand
-        ? `Run: ${escapeHtml(button.command || "")}`
-        : `Create page from ${escapeHtml(button.template || "")}`;
+      const isGit = button.type === "git";
+      const isTerminal = button.type === "terminal";
+      const iconClass = isGit
+        ? "ti-git-branch lstb-icon-git"
+        : isTerminal
+          ? "ti-terminal lstb-icon-terminal"
+          : isCommand
+            ? "ti-terminal-2 lstb-icon-command"
+            : "ti-file-description";
+      const linkClass = isCommand || isGit || isTerminal ? "lstb-link lstb-link-command" : "lstb-link";
+      const title = isGit
+        ? `Git: ${escapeHtml(button.command || "status")}`
+        : isTerminal
+          ? `Terminal: ${escapeHtml(button.script || "")}`
+          : isCommand
+            ? `Run: ${escapeHtml(button.command || "")}`
+            : `Create page from ${escapeHtml(button.template || "")}`;
 
       return `
         <li class="favorite-item font-medium lstb-item">
@@ -58,6 +64,8 @@ function renderButtonItems(buttons: TemplateButton[]) {
             <span class="page-icon ui__icon ti ${iconClass} lstb-icon"></span>
             <span class="page-title">${escapeHtml(button.label)}</span>
             ${isCommand ? '<span class="lstb-command-badge" title="Shell command">▶</span>' : ""}
+            ${isTerminal ? '<span class="lstb-command-badge" title="Terminal script">⌘</span>' : ""}
+            ${isGit ? '<span class="lstb-command-badge" title="Git command">⎇</span>' : ""}
           </a>
         </li>
       `;
@@ -157,6 +165,23 @@ export function registerSidebarModel() {
 
       const button = getSidebarButtons()[index];
       if (!button) {
+        return;
+      }
+
+      if (button.type === "git") {
+        await runGitButton({
+          label: button.label,
+          command: button.command || "status",
+          gitArgs: button.gitArgs,
+        });
+        return;
+      }
+
+      if (button.type === "terminal") {
+        await runTerminalButton({
+          label: button.label,
+          script: button.script || "",
+        });
         return;
       }
 
