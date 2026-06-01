@@ -124,6 +124,30 @@ describe("commandRunner coverage", () => {
     );
   });
 
+  it("uses Windows shell invocation via parent apis", async () => {
+    vi.spyOn(scriptLauncher, "resolveTerminalScriptForCommand").mockReturnValue(null);
+    logseq.settings.preferTerminalScripts = false;
+    logseq.settings.nodePath = "";
+    Object.defineProperty(navigator, "platform", { configurable: true, value: "Win32" });
+
+    const runCli = vi.fn().mockResolvedValue(0);
+    Object.defineProperty(window, "parent", {
+      configurable: true,
+      value: { apis: { runCli } },
+    });
+
+    await runCommandButton({ label: "Echo", cwd: ".", command: "echo hi" });
+    expect(runCli).toHaveBeenCalledWith(
+      expect.objectContaining({
+        command: "cmd.exe",
+        args: expect.stringContaining("echo hi"),
+      })
+    );
+
+    Object.defineProperty(navigator, "platform", { configurable: true, value: "MacIntel" });
+    Object.defineProperty(window, "parent", { configurable: true, value: window });
+  });
+
   it("shows allowlist hint for blocked binaries in run dialog", async () => {
     vi.spyOn(scriptLauncher, "resolveTerminalScriptForCommand").mockReturnValue(null);
     logseq.settings.preferTerminalScripts = false;
